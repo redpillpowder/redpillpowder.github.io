@@ -1,1 +1,183 @@
-<h1>Red Pill Powder</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red Pill Powder</title>
+    <link rel="icon" type="image/x-icon" href="favicon.svg">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        /* Basic styling for body and canvas */
+        body {
+            margin: 0;
+            overflow: hidden; /* Hide scrollbars */
+            background-color: #000; /* Black background */
+            font-family: 'Press Start 2P', cursive; /* Use the specified font */
+            cursor: pointer; /* Indicate the page is clickable */
+        }
+
+        canvas {
+            display: block; /* Remove extra space below canvas */
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1; /* Canvas behind pills */
+        }
+
+        /* Container for the pills */
+        #pill-container {
+            position: fixed; /* Position relative to viewport */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* Center the container */
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            gap: 2rem; /* Space between pills */
+            z-index: 10; /* Pills on top of canvas */
+            padding: 2rem;
+            background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
+            border-radius: 1rem; /* Rounded corners */
+            backdrop-filter: blur(5px); /* Blur effect behind pills */
+        }
+
+        /* Styling for the pill container divs */
+        .pill {
+            width: 80px; /* Adjust size as needed */
+            height: 150px; /* Adjust size as needed */
+            border-radius: 9999px; /* Keep the container oval for glow shape */
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            border: 2px solid rgba(255, 255, 255, 0.5); /* Pill border */
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3); /* Subtle glow */
+            background-color: transparent; /* Ensure container is transparent */
+            overflow: hidden; /* Clip content */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Style for the actual image inside the pill container */
+        .pill img {
+             width: 100%; /* Make image fill the container width */
+             height: 100%; /* Make image fill the container height */
+             object-fit: cover; /* Scales the image to cover the area */
+             display: block; /* Remove extra space */
+             border-radius: inherit; /* Inherit border radius */
+        }
+
+
+        .pill:hover {
+            transform: scale(1.1); /* Slightly enlarge on hover */
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.6); /* Brighter glow */
+        }
+
+        /* Specific pill glows (applied to container div) */
+        #pill-red {
+             box-shadow: 0 0 15px #dc2626; /* Red glow */
+        }
+         #pill-red:hover {
+             box-shadow: 0 0 25px #ef4444; /* Brighter red glow */
+         }
+
+        #pill-blue {
+            box-shadow: 0 0 15px #2563eb; /* Blue glow */
+        }
+         #pill-blue:hover {
+             box-shadow: 0 0 25px #3b82f6; /* Brighter blue glow */
+         }
+
+    </style>
+</head>
+<body>
+    <canvas id="matrixCanvas"></canvas>
+
+    <div id="pill-container">
+         <div id="pill-red" class="pill">
+            <img src="media/pill-red.svg" alt="Red Pill">
+        </div>
+         <div id="pill-blue" class="pill">
+             <img src="media/pill-blue.svg" alt="Blue Pill">
+        </div>
+    </div>
+
+    <script>
+        // Javascript with updated URL
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+        const pillContainer = document.getElementById('pill-container');
+        const redPill = document.getElementById('pill-red'); // Get the container div
+        const bluePill = document.getElementById('pill-blue'); // Get the container div
+
+        // --- Canvas and Matrix Effect Setup ---
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+        const katakana = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン';
+        const characters = katakana;
+        const charactersArray = characters.split('');
+        const fontSize = 16;
+        const fontWeight = 'normal';
+        let columns = Math.floor(width / fontSize);
+        const drops = [];
+        for (let x = 0; x < columns; x++) { drops[x] = 1; }
+        let pillsVisible = false;
+
+        // --- Drawing Function ---
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, width, height);
+            ctx.fillStyle = '#0F0';
+            ctx.font = `${fontWeight} ${fontSize}px "Press Start 2P", monospace`;
+            for (let i = 0; i < drops.length; i++) {
+                const text = charactersArray[Math.floor(Math.random() * charactersArray.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                drops[i]++;
+                if (drops[i] * fontSize > height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+            }
+        }
+
+        // --- Animation Loop ---
+        function animate() {
+            drawMatrix();
+            requestAnimationFrame(animate);
+        }
+
+        // --- Event Listeners ---
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            const newColumns = Math.floor(width / fontSize);
+            while (drops.length < newColumns) { drops.push(Math.floor(Math.random() * height / fontSize)); }
+            drops.length = newColumns;
+            columns = newColumns;
+        });
+        document.body.addEventListener('click', (event) => {
+            if (!pillContainer.contains(event.target) && !pillsVisible) {
+                pillContainer.style.display = 'flex';
+                pillsVisible = true;
+                document.body.style.cursor = 'default';
+            }
+        });
+        redPill.addEventListener('click', (event) => {
+            event.stopPropagation();
+            console.log("Red pill chosen!");
+            // --- UPDATED URL ---
+            window.location.href = 'https://www.youtube.com/@redpillpowder';
+        });
+        bluePill.addEventListener('click', (event) => {
+            event.stopPropagation();
+            console.log("Blue pill chosen!");
+            pillContainer.style.display = 'none';
+            pillsVisible = false;
+            document.body.style.cursor = 'pointer';
+        });
+
+        // --- Start Animation ---
+        animate();
+
+    </script>
+</body>
+</html>
